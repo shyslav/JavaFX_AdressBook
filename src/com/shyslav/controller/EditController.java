@@ -1,5 +1,6 @@
 package com.shyslav.controller;
 
+import com.shyslav.interfaces.impls.CollectionAdress;
 import com.shyslav.model.blotter;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -29,6 +30,9 @@ public class EditController {
     private Label lebPhone;
 
     private blotter Person;
+    private String Checked;
+    private CollectionAdress ca;
+
 
     public void setPerson(blotter person) {
         Person = person;
@@ -43,8 +47,22 @@ public class EditController {
     }
 
     public void actionSave(ActionEvent actionEvent) {
-        Person.setFio(textFIO.getText());
-        Person.setPhone(textPhone.getText());
-        actionClose(actionEvent);
+        if(Checked.equals("btnEdit")) {
+            System.out.println("editButton"+Checked);
+            Person.setFio(textFIO.getText());
+            Person.setPhone(textPhone.getText());
+        }else if(Checked.equals("addButton"))
+        {
+            ca.add(new blotter(textFIO.getText(),textPhone.getText()));
+        }
+            actionClose(actionEvent);
+    }
+
+    public void setCa(CollectionAdress ca) {
+        this.ca = ca;
+    }
+
+    public void setChecked(String checked) {
+        Checked = checked;
     }
 }

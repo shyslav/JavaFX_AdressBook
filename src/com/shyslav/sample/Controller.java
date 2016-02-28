@@ -3,10 +3,13 @@ package com.shyslav.sample;
 import com.shyslav.controller.EditController;
 import com.shyslav.interfaces.impls.CollectionAdress;
 import com.shyslav.model.blotter;
+import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -18,8 +21,11 @@ import javafx.stage.Window;
 
 import java.io.IOException;
 import java.io.ObjectInput;
+import java.net.URL;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
-public class Controller {
+public class Controller implements Initializable {
     private CollectionAdress ca = new CollectionAdress();
     @FXML
     private Button addButton;
@@ -33,24 +39,28 @@ public class Controller {
     private TableView tableFioPhone;
     @FXML
     //<blotter, в каком формате хранить столбец> с какого взять и в какой преобразовать
-    private TableColumn <blotter,String> columnFIO;
+    private TableColumn<blotter, String> columnFIO;
     @FXML
-    private TableColumn <blotter,String> columnPhone;
+    private TableColumn<blotter, String> columnPhone;
     @FXML
     private Label labAmount;
+    @FXML
+    private TextField txtSearch;
+
+    private Stage mainStage;
 
     private Parent fxmlEdit;
     private FXMLLoader fxmlLoader = new FXMLLoader();
     private EditController editController;
     private Stage editDialogStage;
+    private ResourceBundle resourceBundle;
 
-    @FXML
-    //Вызов инициализации после считывания fxml
-    private void initialize()
-    {
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        this.resourceBundle = resources;
         //какие обьекты нам нужны из модели
-        columnFIO.setCellValueFactory(new PropertyValueFactory<blotter,String>("fio"));
-        columnPhone.setCellValueFactory(new PropertyValueFactory<blotter,String>("phone"));
+        columnFIO.setCellValueFactory(new PropertyValueFactory<blotter, String>("fio"));
+        columnPhone.setCellValueFactory(new PropertyValueFactory<blotter, String>("phone"));
         //заполнить лист
         ca.initialTable();
         //записать обзервебл лист в таблицу
@@ -64,8 +74,8 @@ public class Controller {
         });
         updateAmountData();
         try {
-
             fxmlLoader.setLocation(getClass().getResource("../fxml/edit.fxml"));
+            fxmlLoader.setResources(ResourceBundle.getBundle("com.shyslav.Locale.locale",new Locale("en")));
             fxmlEdit = fxmlLoader.load();
             editController = fxmlLoader.getController();
         } catch (IOException e) {
@@ -73,84 +83,99 @@ public class Controller {
         }
     }
 
-    private void updateAmountData()
-    {
-        labAmount.setText("Количество записей: " + ca.getPesronsList().size());
+    private void updateAmountData() {
+        labAmount.setText(resourceBundle.getString("amountData")+": " + ca.getPesronsList().size());
     }
 
     public void actionButtonPressed(ActionEvent actionEvent) {
         Object source = actionEvent.getSource();
         //если текущей обьект не кнопка, выйти из метода
-        if(!(source instanceof Button))
-        {
+        if (!(source instanceof Button)) {
             return;
         }
         Button clickedButton = (Button) source;
 
         //получить выделенную строку
         blotter selectedPerson = (blotter) tableFioPhone.getSelectionModel().getSelectedItem();
-        Window parentWindow = ((Node) actionEvent.getSource()).getScene().getWindow();
-        if(selectedPerson==null) {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Ошибка");
-            alert.setHeaderText("Вы не выбрали ни одной записи");
-            alert.setContentText("Для выбора записи из таблицы необходимо нажать на нее один раз!");
-            alert.showAndWait();
-            return;
-        }
-        editController.setPerson(selectedPerson);
-        switch (clickedButton.getId())
-        {
+        //Window parentWindow = ((Node) actionEvent.getSource()).getScene().getWindow();
+        switch (clickedButton.getId()) {
             case "btnSearch":
-                System.out.println("btnSearch" + selectedPerson.getFio() + selectedPerson.getPhone());
+                SearchAction(txtSearch.getText());
+                System.out.println(txtSearch.getText());
+//                System.out.println("btnSearch" + selectedPerson.getFio() + selectedPerson.getPhone());
                 break;
             case "btnDelete":
-                System.out.println("btnDelete" +  selectedPerson.getFio() + selectedPerson.getPhone());
+                DeleteAction(selectedPerson);
+                System.out.println("btnDelete" + selectedPerson.getFio() + selectedPerson.getPhone());
                 break;
             case "btnEdit":
-                showDialog(parentWindow);
-                System.out.println("btnEdit" +  selectedPerson.getFio() + selectedPerson.getPhone());
+                if (selectedPerson == null) {
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                    alert.setTitle("Ошибка");
+                    alert.setHeaderText("Вы не выбрали ни одной записи");
+                    alert.setContentText("Для выбора записи из таблицы необходимо нажать на нее один раз!");
+                    alert.showAndWait();
+                    return;
+                }
+                editController.setPerson(selectedPerson);
+                showDialog();
+                System.out.println("btnEdit" + selectedPerson.getFio() + selectedPerson.getPhone());
                 break;
             case "addButton":
-                System.out.println("addButton" +  selectedPerson.getFio() + selectedPerson.getPhone());
+                editController.setCa(ca);
+                editController.setChecked(clickedButton.getId());
+                showDialog();
                 break;
         }
 
     }
+
     //Функция добавления или правки табличных данных
-    private void showDialog(Window parentWindow)
-    {
-        if (editDialogStage==null) {
+    private void showDialog() {
+        if (editDialogStage == null) {
             editDialogStage = new Stage();
-            editDialogStage.setTitle("Редактирование записи");
+            editDialogStage.setTitle(resourceBundle.getString("Edit"));
             editDialogStage.setMinHeight(150);
             editDialogStage.setMinWidth(300);
             editDialogStage.setResizable(false);
             editDialogStage.setScene(new Scene(fxmlEdit));
             editDialogStage.initModality(Modality.WINDOW_MODAL);
-            editDialogStage.initOwner(parentWindow);
+            editDialogStage.initOwner(mainStage);
         }
-            editDialogStage.show();
-//            try{
-//            Stage stage = new Stage();
-//            Parent root = FXMLLoader.load(getClass().getResource("../fxml/edit.fxml"));
-//            stage.setTitle(name);
-//            stage.setMinHeight(100);
-//            stage.setMinWidth(450);
-//            //запретить растяжение
-//            stage.setResizable(false);
-//            stage.setScene(new Scene(root));
-//            //сделать окно модальным
-//            stage.initModality(Modality.WINDOW_MODAL);
-//            //определить это окно дочерним к тому откуда вызвано данное окно
-//            stage.initOwner(((Node)actionEvent.getSource()).getScene().getWindow());
-//            stage.show();
-//        }catch (IOException ex)
-//        {
-//            ex.printStackTrace();
-//        }
+        editDialogStage.show();
     }
 
+    private void DeleteAction(blotter Person) {
+        ca.delete(Person);
+    }
 
+    private void SearchAction(String searchText) {
+        ObservableList<blotter> list = FXCollections.observableArrayList();
+        for (int i = 0; i < ca.getPesronsList().size(); i++) {
+            if (ca.getPesronsList().get(i).getPhone().contains(searchText) || ca.getPesronsList().get(i).getFio().contains(searchText)) {
+                //записать обзервебл лист в таблицу
+                list.add(ca.getPesronsList().get(i));
+                System.out.println(list.size());
+                tableFioPhone.setItems(list);
+                return;
+            }
+        }
+        tableFioPhone.setItems(ca.getPesronsList());
+        return;
+    }
 
+    public void setMainStage(Stage mainStage) {
+        this.mainStage = mainStage;
+    }
+
+    public void changeLanguage(ActionEvent actionEvent) {
+        Main.setDEFAULT_LOCALE(new Locale("ru")); // change to english
+        mainStage.close();
+        Main reload = new Main();
+        try {
+            reload.start(mainStage);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
