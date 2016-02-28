@@ -43,7 +43,7 @@
       <AnchorPane maxHeight="200.0" prefHeight="10.0" prefWidth="200.0">
          <children>
             <Label fx:id="labAmount" text="%amountData" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" />
-            <Button fx:id="changeEN" layoutX="442.0" layoutY="-5.0" minWidth="30.0" mnemonicParsing="false" onAction="#changeLanguage" text="EN" AnchorPane.rightAnchor="1.0" />
+            <Button fx:id="ChangeEN" layoutX="442.0" layoutY="-5.0" minWidth="30.0" mnemonicParsing="false" onAction="#changeLanguage" text="EN" AnchorPane.rightAnchor="1.0" />
             <Button fx:id="ChangeRU" layoutX="404.0" layoutY="-5.0" minWidth="30.0" mnemonicParsing="false" onAction="#changeLanguage" text="RU" AnchorPane.rightAnchor="45.0" />
          </children>
          <VBox.margin>

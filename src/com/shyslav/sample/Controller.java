@@ -75,7 +75,7 @@ public class Controller implements Initializable {
         updateAmountData();
         try {
             fxmlLoader.setLocation(getClass().getResource("../fxml/edit.fxml"));
-            fxmlLoader.setResources(ResourceBundle.getBundle("com.shyslav.Locale.locale",new Locale("en")));
+            fxmlLoader.setResources(ResourceBundle.getBundle("com.shyslav.Locale.locale"));
             fxmlEdit = fxmlLoader.load();
             editController = fxmlLoader.getController();
         } catch (IOException e) {
@@ -118,6 +118,7 @@ public class Controller implements Initializable {
                     return;
                 }
                 editController.setPerson(selectedPerson);
+                editController.setChecked(clickedButton.getId());
                 showDialog();
                 System.out.println("btnEdit" + selectedPerson.getFio() + selectedPerson.getPhone());
                 break;
@@ -169,7 +170,19 @@ public class Controller implements Initializable {
     }
 
     public void changeLanguage(ActionEvent actionEvent) {
-        Main.setDEFAULT_LOCALE(new Locale("ru")); // change to english
+        Object source = actionEvent.getSource();
+        if (!(source instanceof Button)) {
+            return;
+        }
+        Button clickedButton = (Button) source;
+        switch (clickedButton.getId()) {
+            case "ChangeEN":
+                Main.setDEFAULT_LOCALE(new Locale("en")); // change to english
+                break;
+            case "ChangeRU":
+                Main.setDEFAULT_LOCALE(new Locale("ru")); // change to rus
+                break;
+        }
         mainStage.close();
         Main reload = new Main();
         try {
